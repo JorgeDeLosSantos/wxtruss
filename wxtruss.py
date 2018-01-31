@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 import iconos as ic
+from nusa import *
 
 
 class wxTruss(wx.Frame):
@@ -85,9 +86,7 @@ class wxTruss(wx.Frame):
     def on_about(self,event):
         AboutDialog(None)
         
-    def build_model(self):
-        from nusa import *
-        
+    def build_model(self):        
         nc = self.nodes
         ec = self.elements
         x,y = nc[:,0], nc[:,1]
@@ -106,21 +105,21 @@ class wxTruss(wx.Frame):
             elementos.append(ce)
             
         self.model = TrussModel("Truss Model")
-        for n in nodos: self.model.addNode(n)
-        for e in elementos: self.model.addElement(e)
+        for n in nodos: self.model.add_node(n)
+        for e in elementos: self.model.add_element(e)
         
         for c in self.constraints:
             k,ux,uy = int(c[0]),c[1],c[2]
             if ~np.isnan(ux) and ~np.isnan(uy):
-                self.model.addConstraint(nodos[k-1], ux=ux, uy=uy)
+                self.model.add_constraint(nodos[k-1], ux=ux, uy=uy)
             elif ~np.isnan(ux):
-                self.model.addConstraint(nodos[k-1], ux=ux)
+                self.model.add_constraint(nodos[k-1], ux=ux)
             elif ~np.isnan(uy):
-                self.model.addConstraint(nodos[k-1], uy=uy)
+                self.model.add_constraint(nodos[k-1], uy=uy)
         
         for f in self.forces:
             k,fx,fy = int(f[0]),f[1],f[2]
-            self.model.addForce(nodos[k-1],(fx,fy))
+            self.model.add_force(nodos[k-1],(fx,fy))
         
     def solve_model(self,event):
         self.build_model()
@@ -132,13 +131,13 @@ class wxTruss(wx.Frame):
         
         m = self.model
         
-        NODES = [n.label+1 for n in m.getNodes()]
-        ELEMENTS = [e.label+1 for e in m.getElements()]
+        NODES = [n.label+1 for n in m.get_nodes()]
+        ELEMENTS = [e.label+1 for e in m.get_elements()]
         
-        NODAL_DISPLACEMENTS = [[n.ux,n.uy] for n in m.getNodes()]
-        NODAL_FORCES = [[n.fx,n.fy] for n in m.getNodes()]
-        ELEMENT_FORCES = [e.f for e in m.getElements()]
-        ELEMENT_STRESSES = [e.s for e in m.getElements()]
+        NODAL_DISPLACEMENTS = [[n.ux,n.uy] for n in m.get_nodes()]
+        NODAL_FORCES = [[n.fx,n.fy] for n in m.get_nodes()]
+        ELEMENT_FORCES = [e.f for e in m.get_elements()]
+        ELEMENT_STRESSES = [e.s for e in m.get_elements()]
         
         ND = pd.DataFrame(NODAL_DISPLACEMENTS, columns=["UX","UY"], index=NODES).to_html()
         NF = pd.DataFrame(NODAL_FORCES, columns=["FX","FY"], index=NODES).to_html()
@@ -155,7 +154,7 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.nodes = data
         dlg.Destroy()
-        print data
+        print(data)
         
     def add_elements(self,event):
         dlg = ElementsDialog(self)
@@ -163,7 +162,7 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.elements = data
         dlg.Destroy()
-        print data
+        print(data)
         
     def add_constraints(self,event):
         dlg = ConstraintsDialog(self)
@@ -171,7 +170,7 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.constraints = data
         dlg.Destroy()
-        print data
+        print(data)
         
     def add_forces(self,event):
         dlg = ForcesDialog(self)
@@ -179,7 +178,7 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.forces = data
         dlg.Destroy()
-        print data
+        print(data)
 
     def plot_model(self,event):
         """
@@ -189,8 +188,8 @@ class wxTruss(wx.Frame):
         ax = self.axes
         ax.cla()
         
-        for elm in self.model.getElements():
-            ni, nj = elm.getNodes()
+        for elm in self.model.get_elements():
+            ni, nj = elm.get_nodes()
             ax.plot([ni.x,nj.x],[ni.y,nj.y],"b-")
             for nd in (ni,nj):
                 if nd.fx > 0: self._draw_xforce(ax,nd.x,nd.y,1)
@@ -241,7 +240,7 @@ class wxTruss(wx.Frame):
         
     def rect_region(self,factor=7.0):
         nx,ny = [],[]
-        for n in self.model.getNodes():
+        for n in self.model.get_nodes():
             nx.append(n.x)
             ny.append(n.y)
         xmn,xmx,ymn,ymx = min(nx),max(nx),min(ny),max(ny)
@@ -257,8 +256,8 @@ class wxTruss(wx.Frame):
         
         df = dfactor*self._calculate_deformed_factor()
         
-        for elm in self.model.getElements():
-            ni,nj = elm.getNodes()
+        for elm in self.model.get_elements():
+            ni,nj = elm.get_nodes()
             x, y = [ni.x,nj.x], [ni.y,nj.y]
             xx = [ni.x+ni.ux*df, nj.x+nj.ux*df]
             yy = [ni.y+ni.uy*df, nj.y+nj.uy*df]
@@ -287,8 +286,8 @@ class wxTruss(wx.Frame):
         
     def _calculate_deformed_factor(self):
         x0,x1,y0,y1 = self.rect_region()
-        ux = np.abs(np.array([n.ux for n in self.model.getNodes()]))
-        uy = np.abs(np.array([n.uy for n in self.model.getNodes()]))
+        ux = np.abs(np.array([n.ux for n in self.model.get_nodes()]))
+        uy = np.abs(np.array([n.uy for n in self.model.get_nodes()]))
         sf = 1.5e-2
         if ux.max()==0 and uy.max()!=0:
             kfx = sf*(y1-y0)/uy.max()
@@ -358,7 +357,7 @@ class DataGrid(grid.Grid):
         self.CreateGrid(rows,cols)
         self.SetRowLabelSize(20)
         
-        self.Bind(grid.EVT_GRID_CELL_CHANGE, self.OnCellEdit)
+        self.Bind(grid.EVT_GRID_CELL_CHANGED, self.OnCellEdit)
         self.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnRightClick)
         
     def UpdateGridSize(self,rows,cols):
@@ -506,7 +505,6 @@ class DataGrid(grid.Grid):
                 
     def isempty(self,iterable):
         return True if len(iterable)==0 else False
-
 
 
 
