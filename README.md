@@ -2,7 +2,6 @@
 
 A simple Python application for 2D-Truss analysis.
 
-
 ## Installation
 
 Using pip:
