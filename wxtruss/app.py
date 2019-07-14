@@ -16,11 +16,12 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
 import matplotlib.lines as mlines
-import iconos as ic
+import wxtruss.iconos as ic
 from nusa import * # FEA library
 import webbrowser
 import pandas as pd
 import json
+import os
 
 
 class wxTruss(wx.Frame):
@@ -81,6 +82,7 @@ class wxTruss(wx.Frame):
     
     def init_menu(self):
         m_file = wx.Menu()
+        from_json = m_file.Append(-1, "Read model from Truss/JSON file... \tCtrl+J")
         quit_app = m_file.Append(-1, "Quit \tCtrl+Q")
         
         m_help = wx.Menu()
@@ -92,14 +94,18 @@ class wxTruss(wx.Frame):
         menu_bar.Append(m_help, "Help")
         self.SetMenuBar(menu_bar)
         
+        self.Bind(wx.EVT_MENU, self.on_from_json, from_json)
         self.Bind(wx.EVT_MENU, self.on_about, about)
         self.Bind(wx.EVT_MENU, self.on_help, _help)
         
     def init_model_data(self):
-        self.nodes = np.array([[0,0],[2,0],[0,2]])
-        self.elements = np.array([[1,2,200e9,1e-4],[2,3,200e9,1e-4],[1,3,200e9,1e-4]])
-        self.forces = np.array([[3,1000,0]])
-        self.constraints = np.array([[1, 0, 0], [2, 0, 0]])
+        try:
+            self.read_model_from_json("data/example_03.truss")
+        except:
+            self.nodes = np.array([[0,0],[2,0],[0,2]])
+            self.elements = np.array([[1,2,200e9,1e-4],[2,3,200e9,1e-4],[1,3,200e9,1e-4]])
+            self.forces = np.array([[3,1000,0]])
+            self.constraints = np.array([[1, 0, 0], [2, 0, 0]])
         
     def isempty(self,arg):
         if not arg:
@@ -111,7 +117,20 @@ class wxTruss(wx.Frame):
         
     def on_help(self,event):
         print("Help unavailable")
-        self.read_model_from_json()
+        
+        
+    def on_from_json(self,event):
+        path = ""
+        wildcard = "Truss file (*.truss)|*.truss| JSON file (*.json)|*.json"
+        dlg = wx.FileDialog(self, message="Select a Truss/JSON file...",
+        defaultDir=os.getcwd(), wildcard=wildcard, style=wx.FD_OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+        dlg.Destroy()
+        if not path:
+            wx.MessageBox('Not file selected', 'wxTruss', wx.OK | wx.ICON_INFORMATION)
+        else:
+            self.read_model_from_json(path)
         
     def build_model(self):        
         nc = self.nodes
@@ -339,8 +358,8 @@ class wxTruss(wx.Frame):
             kfy = sf*(y1-y0)/uy.max()
         return np.mean([kfx,kfy])
     
-    def read_model_from_json(self):
-        json_file = 'data/example_02.truss'
+    def read_model_from_json(self,filename):
+        json_file = filename
         with open(json_file, 'r') as myfile:
             data=myfile.read()
         obj = json.loads(data)
@@ -376,6 +395,7 @@ class wxTruss(wx.Frame):
             fuerzas[i,2] = m["fy"]
             fuerzas[i,0] = m["node"]
         self.forces = fuerzas
+        self.plot_model([])
             
 
 class AboutDialog(wx.Frame):
