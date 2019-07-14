@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# wxtruss 0.1.0
+# wxtruss 0.1.2
 # License: MIT License
 # Author: Pedro Jorge De Los Santos
 # E-mail: delossantosmfq@gmail.com
@@ -421,14 +421,14 @@ ABOUT_HTML = """
 </head>
 <body bgcolor="#0A3865" link="#E5E5E5" vlink="#F0F0F0" alink="#F0F0F0">
   <center>
-  <h1><font color="#FFFF00"> wxTruss 0.1.0 </font></h1>
+  <h1><font color="#FFFF00"> wxTruss 0.1.2 </font></h1>
 
 
   <font color="#ADD8E6">
   <b>Developer:</b> Pedro Jorge De Los Santos <br>
   <b>E-mail:</b> delossantosmfq@gmail.com <br>
   <b>License:</b> MIT (<a href="https://opensource.org/licenses/MIT">See license</a>) <br>
-  <a href="https://github.com/JorgeDeLosSantos/NanchiPlot">Project Repository</a>
+  <a href="https://github.com/JorgeDeLosSantos/wxtruss">Project Repository</a>
   </font>
   
   </center>
