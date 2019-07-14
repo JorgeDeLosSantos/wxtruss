@@ -14,25 +14,32 @@ matplotlib.use('WXAgg')
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
+import matplotlib.lines as mlines
 import iconos as ic
-from nusa import *
+from nusa import * # FEA library
+import webbrowser
+import pandas as pd
+import json
 
 
 class wxTruss(wx.Frame):
     def __init__(self,parent):
         wx.Frame.__init__(self,parent,title="wxTruss",size=(900,600))
         
-        self.initMenu()
-        self.initCtrls()
+        self.init_menu()
+        self.init_ctrls()
+        self.init_model_data()
         
-        self.SetBackgroundColour("#ffffff")
+        self.SetBackgroundColour("#FFFFFF")
         self.SetIcon(ic.wxtruss.GetIcon())
         self.Centre(True)
         self.Show()
         
-    def initCtrls(self):
+    def init_ctrls(self):
         self.mainsz = wx.BoxSizer(wx.HORIZONTAL)
         self.upsz = wx.BoxSizer(wx.HORIZONTAL)
+        self.figsz = wx.BoxSizer(wx.VERTICAL)
 
         self.toolbar = Toolbar(self)
         self.toolbar.Realize()
@@ -43,13 +50,17 @@ class wxTruss(wx.Frame):
         self.figure = Figure()
         self.axes = self.figure.add_subplot(111)
         self.canvas = FigureCanvas(self, -1, self.figure)
-        self.upsz.Add(self.canvas, 1, wx.EXPAND|wx.ALL, 2)
+        self.mpl_toolbar = NavigationToolbar(self.canvas)
+        self.mpl_toolbar.Realize()
+        self.figsz.Add(self.canvas, 12, wx.EXPAND|wx.ALL, 2)
+        self.figsz.Add(self.mpl_toolbar, 1, wx.EXPAND|wx.ALL, 20)
         #~ self.figure.set_facecolor("w")
         
         self.txtout = HTMLWindow(self)
         #~ self.txtout.SetMinSize((200,-1))
         #~ self.txtout.SetPage("<html></html>")
         
+        self.upsz.Add(self.figsz, 1, wx.EXPAND|wx.ALL, 2)
         self.mainsz.Add(self.upsz, 5, wx.EXPAND)
         self.mainsz.Add(self.txtout, 3, wx.EXPAND)
         self.SetSizer(self.mainsz)
@@ -66,9 +77,9 @@ class wxTruss(wx.Frame):
     def _set_mpl(self):
         matplotlib.rc('figure', facecolor="#ffffff")
         matplotlib.rc('axes', facecolor="#ffffff", linewidth=0.1, grid=True)
-        matplotlib.rc('font', family="Times New Roman")
+        # ~ matplotlib.rc('font', family="Times New Roman")
     
-    def initMenu(self):
+    def init_menu(self):
         m_file = wx.Menu()
         quit_app = m_file.Append(-1, "Quit \tCtrl+Q")
         
@@ -82,9 +93,25 @@ class wxTruss(wx.Frame):
         self.SetMenuBar(menu_bar)
         
         self.Bind(wx.EVT_MENU, self.on_about, about)
+        self.Bind(wx.EVT_MENU, self.on_help, _help)
+        
+    def init_model_data(self):
+        self.nodes = np.array([[0,0],[2,0],[0,2]])
+        self.elements = np.array([[1,2,200e9,1e-4],[2,3,200e9,1e-4],[1,3,200e9,1e-4]])
+        self.forces = np.array([[3,1000,0]])
+        self.constraints = np.array([[1, 0, 0], [2, 0, 0]])
+        
+    def isempty(self,arg):
+        if not arg:
+            return True
+        return False
         
     def on_about(self,event):
         AboutDialog(None)
+        
+    def on_help(self,event):
+        print("Help unavailable")
+        self.read_model_from_json()
         
     def build_model(self):        
         nc = self.nodes
@@ -126,30 +153,35 @@ class wxTruss(wx.Frame):
         self.model.solve()
         self.html_report()
         
-    def html_report(self):
-        import pandas as pd
-        
+    def html_report(self):        
         m = self.model
         
         NODES = [n.label+1 for n in m.get_nodes()]
         ELEMENTS = [e.label+1 for e in m.get_elements()]
         
+        el = [e.get_nodes() for e in m.get_elements()]
+        ELEMENTS_CONN = [(ni.label+1,nj.label+1) for ni,nj in el]
+        NODAL_COORDS = [[n.x,n.y] for n in m.get_nodes()]
         NODAL_DISPLACEMENTS = [[n.ux,n.uy] for n in m.get_nodes()]
         NODAL_FORCES = [[n.fx,n.fy] for n in m.get_nodes()]
         ELEMENT_FORCES = [e.f for e in m.get_elements()]
         ELEMENT_STRESSES = [e.s for e in m.get_elements()]
         
+        EL_INFO = pd.DataFrame(ELEMENTS_CONN, columns=["Ni","Nj"], index=ELEMENTS).to_html()
+        ND_COORDS = pd.DataFrame(NODAL_COORDS, columns=["X","Y"], index=NODES).to_html()
         ND = pd.DataFrame(NODAL_DISPLACEMENTS, columns=["UX","UY"], index=NODES).to_html()
         NF = pd.DataFrame(NODAL_FORCES, columns=["FX","FY"], index=NODES).to_html()
         EF = pd.DataFrame(ELEMENT_FORCES, columns=["F",], index=ELEMENTS).to_html()
         ES = pd.DataFrame(ELEMENT_STRESSES, columns=["S",], index=ELEMENTS).to_html()
         
         txt = REPORT_TEMPLATE.format(nodal_displacements=ND, nodal_forces=NF, 
-                                     element_forces=EF, element_stresses=ES)  
+                                     element_forces=EF, element_stresses=ES,
+                                     nodal_coords=ND_COORDS, elements=EL_INFO)  
         self.txtout.SetPage(txt)
         
     def add_nodes(self,event):
-        dlg = NodesDialog(self)
+        data = self.nodes
+        dlg = NodesDialog(self,data)
         if dlg.ShowModal() == wx.ID_OK:
             data = dlg.GetData()
             self.nodes = data
@@ -157,7 +189,8 @@ class wxTruss(wx.Frame):
         print(data)
         
     def add_elements(self,event):
-        dlg = ElementsDialog(self)
+        data = self.elements
+        dlg = ElementsDialog(self,data)
         if dlg.ShowModal() == wx.ID_OK:
             data = dlg.GetData()
             self.elements = data
@@ -165,7 +198,8 @@ class wxTruss(wx.Frame):
         print(data)
         
     def add_constraints(self,event):
-        dlg = ConstraintsDialog(self)
+        data = self.constraints
+        dlg = ConstraintsDialog(self,data)
         if dlg.ShowModal() == wx.ID_OK:
             data = dlg.GetData()
             self.constraints = data
@@ -173,7 +207,8 @@ class wxTruss(wx.Frame):
         print(data)
         
     def add_forces(self,event):
-        dlg = ForcesDialog(self)
+        data = self.forces
+        dlg = ForcesDialog(self,data)
         if dlg.ShowModal() == wx.ID_OK:
             data = dlg.GetData()
             self.forces = data
@@ -190,7 +225,7 @@ class wxTruss(wx.Frame):
         
         for elm in self.model.get_elements():
             ni, nj = elm.get_nodes()
-            ax.plot([ni.x,nj.x],[ni.y,nj.y],"b-")
+            ax.plot([ni.x,nj.x],[ni.y,nj.y],"b-o", markersize=3)
             for nd in (ni,nj):
                 if nd.fx > 0: self._draw_xforce(ax,nd.x,nd.y,1)
                 if nd.fx < 0: self._draw_xforce(ax,nd.x,nd.y,-1)
@@ -199,7 +234,14 @@ class wxTruss(wx.Frame):
                 if nd.ux == 0: self._draw_xconstraint(ax,nd.x,nd.y)
                 if nd.uy == 0: self._draw_yconstraint(ax,nd.x,nd.y)
         
+        
         x0,x1,y0,y1 = self.rect_region()
+        xf,yf = abs(x1-x0)/20, abs(y1-y0)/20
+        # ~ bbox = dict(boxstyle=f"circle", fc="#fafafa")
+        # ~ for nd in self.model.get_nodes():
+            # ~ cstr = str(nd.label+1)
+            # ~ ax.text(nd.x - xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
+            # ~ zorder=10000, bbox=bbox)
         ax.axis('equal')
         ax.set_xlim(x0,x1)
         ax.set_ylim(y0,y1)
@@ -223,10 +265,10 @@ class wxTruss(wx.Frame):
         HW = dy/5.0
         HL = dy/3.0
         arrow_props = dict(head_width=HW, head_length=HL, fc='r', ec='r')
-        axes.arrow(x, y, dx, ddir*dy, **arrow_props)
+        axes.arrow(x, y, dx, ddir*dy, zorder=1000, **arrow_props)
         
     def _draw_xconstraint(self,axes,x,y):
-        axes.plot(x, y, "g<", markersize=10, alpha=0.6)
+        axes.plot(x, y, "b<", markersize=10, alpha=0.6)
     
     def _draw_yconstraint(self,axes,x,y):
         axes.plot(x, y, "gv", markersize=10, alpha=0.6)
@@ -249,8 +291,6 @@ class wxTruss(wx.Frame):
         return xmn-kx, xmx+kx, ymn-ky, ymx+ky
         
     def plot_deformed_shape(self,event,dfactor=1.0):
-        import matplotlib.lines as mlines
-        
         ax = self.axes
         ax.cla() #clear axes
         
@@ -270,16 +310,15 @@ class wxTruss(wx.Frame):
                                   markersize=5, label="Deformed (Factor: x{:0.0f})".format(self._calculate_deformed_factor()))
         
         # Shrink current axis by 20%
-        box = ax.get_position()
-        ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                 box.width, box.height * 0.9])
+        # ~ box = ax.get_position()
+        # ~ ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                 # ~ box.width, box.height * 0.9])
         
         ax.legend(handles=[defor,undefor], loc='upper center', bbox_to_anchor=(0.5, -0.05),
           fancybox=True, shadow=True, ncol=5)
         
         x0,x1,y0,y1 = self.rect_region()
         ax.axis('equal')
-        ax.legend()
         ax.set_xlim(x0,x1)
         ax.set_ylim(y0,y1)
         self.canvas.draw()
@@ -299,8 +338,45 @@ class wxTruss(wx.Frame):
             kfx = sf*(x1-x0)/ux.max()
             kfy = sf*(y1-y0)/uy.max()
         return np.mean([kfx,kfy])
-
-
+    
+    def read_model_from_json(self):
+        json_file = 'data/example_02.truss'
+        with open(json_file, 'r') as myfile:
+            data=myfile.read()
+        obj = json.loads(data)
+        
+        nn = len(obj["nodes"])
+        nodes = np.zeros((nn,2))
+        for i,m in enumerate(obj["nodes"]):
+            nodes[i,0] = m["x"]
+            nodes[i,1] = m["y"]
+        self.nodes = nodes
+        
+        nn = len(obj["elements"])
+        elementos = np.zeros((nn,4))
+        for i,m in enumerate(obj["elements"]):
+            elementos[i,0] = m["ni"]
+            elementos[i,1] = m["nj"]
+            elementos[i,2] = m["E"]
+            elementos[i,3] = m["A"]
+        self.elements = elementos
+        
+        nn = len(obj["constraints"])
+        const = np.zeros((nn,3))
+        for i,m in enumerate(obj["constraints"]):
+            const[i,1] = np.nan if m["ux"] == "free" else m["ux"]
+            const[i,2] = np.nan if m["uy"] == "free" else m["uy"]
+            const[i,0] = m["node"]
+        self.constraints = const
+        
+        nn = len(obj["forces"])
+        fuerzas = np.zeros((nn,3))
+        for i,m in enumerate(obj["forces"]):
+            fuerzas[i,1] = m["fx"]
+            fuerzas[i,2] = m["fy"]
+            fuerzas[i,0] = m["node"]
+        self.forces = fuerzas
+            
 
 class AboutDialog(wx.Frame):
     def __init__(self,parent,*args,**kwargs):
@@ -329,7 +405,7 @@ ABOUT_HTML = """
 
 
   <font color="#ADD8E6">
-  <b>Author:</b> Pedro Jorge De Los Santos <br>
+  <b>Developer:</b> Pedro Jorge De Los Santos <br>
   <b>E-mail:</b> delossantosmfq@gmail.com <br>
   <b>License:</b> MIT (<a href="https://opensource.org/licenses/MIT">See license</a>) <br>
   <a href="https://github.com/JorgeDeLosSantos/NanchiPlot">Project Repository</a>
@@ -509,18 +585,21 @@ class DataGrid(grid.Grid):
 
 
 class NodesTable(DataGrid):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data=[],**kwargs):
         DataGrid.__init__(self,parent=parent,gridsize=(10,2),**kwargs)
         
         self.SetColLabelValue(0, "X")
         self.SetColLabelValue(1, "Y")
         
-        test_nodes = np.array([[0,0],[2,0],[0,2]])
-        self.SetArrayData(test_nodes)
+        if isinstance(data,list):
+            nodes_info = np.array([[0,0],[2,0],[0,2]])
+        else:
+            nodes_info = data
+        self.SetArrayData(nodes_info)
         
         
 class ElementsTable(DataGrid):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data=[],**kwargs):
         DataGrid.__init__(self,parent=parent,gridsize=(10,4),**kwargs)
 
         self.SetColLabelValue(0, "Ni")
@@ -530,9 +609,12 @@ class ElementsTable(DataGrid):
         self.SetColSize(0, 50)
         self.SetColSize(1, 50)
         
-        E,A = 200e9, 0.01
-        test_elm = np.array([[1,2,E,A],[2,3,E,A],[3,1,E,A]])
-        self.SetArrayData(test_elm)
+        if isinstance(data,list):
+            E,A = 200e9, 0.01
+            elm_info = np.array([[1,2,E,A],[2,3,E,A],[3,1,E,A]])
+        else:
+            elm_info = data
+        self.SetArrayData(elm_info)
         
 
     def OnCellEdit(self,event):
@@ -549,15 +631,18 @@ class ElementsTable(DataGrid):
 
 
 class ConstraintsTable(DataGrid):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data=[],**kwargs):
         DataGrid.__init__(self,parent=parent,gridsize=(10,3),**kwargs)
         
         self.SetColLabelValue(0, "Node")
         self.SetColLabelValue(1, "UX")
         self.SetColLabelValue(2, "UY")
         
-        test = np.array([[1,0,0],[2,np.nan,0]])
-        self.SetArrayData(test)
+        if isinstance(data,list):
+            cinfo = np.array([[1,0,0],[2,np.nan,0]])
+        else:
+            cinfo = data
+        self.SetArrayData(cinfo)
      
     def GetArrayData(self):
         nrows = self.GetNumberRows()
@@ -578,24 +663,28 @@ class ConstraintsTable(DataGrid):
 
 
 class ForcesTable(DataGrid):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data=[],**kwargs):
         DataGrid.__init__(self,parent=parent,gridsize=(10,3),**kwargs)
         
         self.SetColLabelValue(0, "Node")
         self.SetColLabelValue(1, "FX")
         self.SetColLabelValue(2, "FY")
         
-        test = np.array([[3,1000,0]])
-        self.SetArrayData(test)
+        if isinstance(data,list):
+            finfo = np.array([[3,1000,0]])
+        else:
+            finfo = data
+        self.SetArrayData(finfo)
 
 
 
 
 
 class NodesDialog(wx.Dialog):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data,**kwargs):
         wx.Dialog.__init__(self,parent=parent,title="Nodes", size=(220,400))
         #~ self.LABEL_FONT = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.data = data
         self.SetBackgroundColour("#ffffff")
         self.initCtrls()
         self.Centre(True)
@@ -604,7 +693,7 @@ class NodesDialog(wx.Dialog):
         self.sz = wx.BoxSizer(wx.VERTICAL)
         self.btsz = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.grid = NodesTable(self)
+        self.grid = NodesTable(self,self.data)
         self.grid.SetLabelBackgroundColour("#ffffff")
         
         self.okbt = wx.Button(self, wx.ID_OK, u"OK")
@@ -622,9 +711,10 @@ class NodesDialog(wx.Dialog):
 
 
 class ElementsDialog(wx.Dialog):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data,**kwargs):
         wx.Dialog.__init__(self,parent=parent,title="Elements", size=(400,400))
         #~ self.LABEL_FONT = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.data = data
         self.SetBackgroundColour("#ffffff")
         self.initCtrls()
         self.Centre(True)
@@ -633,7 +723,7 @@ class ElementsDialog(wx.Dialog):
         self.sz = wx.BoxSizer(wx.VERTICAL)
         self.btsz = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.grid = ElementsTable(self)
+        self.grid = ElementsTable(self,self.data)
         self.grid.SetLabelBackgroundColour("#ffffff")
         
         self.okbt = wx.Button(self, wx.ID_OK, u"OK")
@@ -652,9 +742,10 @@ class ElementsDialog(wx.Dialog):
 
 
 class ConstraintsDialog(wx.Dialog):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data,**kwargs):
         wx.Dialog.__init__(self,parent=parent,title="Constraints", size=(300,400))
         #~ self.LABEL_FONT = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.data = data
         self.SetBackgroundColour("#ffffff")
         self.initCtrls()
         self.Centre(True)
@@ -663,7 +754,7 @@ class ConstraintsDialog(wx.Dialog):
         self.sz = wx.BoxSizer(wx.VERTICAL)
         self.btsz = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.grid = ConstraintsTable(self)
+        self.grid = ConstraintsTable(self,self.data)
         self.grid.SetLabelBackgroundColour("#ffffff")
         
         self.okbt = wx.Button(self, wx.ID_OK, u"OK")
@@ -681,9 +772,10 @@ class ConstraintsDialog(wx.Dialog):
 
 
 class ForcesDialog(wx.Dialog):
-    def __init__(self,parent,**kwargs):
+    def __init__(self,parent,data,**kwargs):
         wx.Dialog.__init__(self,parent=parent,title="Forces", size=(300,400))
         #~ self.LABEL_FONT = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.data = data
         self.SetBackgroundColour("#ffffff")
         self.initCtrls()
         self.Centre(True)
@@ -692,7 +784,7 @@ class ForcesDialog(wx.Dialog):
         self.sz = wx.BoxSizer(wx.VERTICAL)
         self.btsz = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.grid = ForcesTable(self)
+        self.grid = ForcesTable(self,self.data)
         self.grid.SetLabelBackgroundColour("#ffffff")
         
         self.okbt = wx.Button(self, wx.ID_OK, u"OK")
@@ -765,7 +857,15 @@ REPORT_TEMPLATE = """
 
   <b><font color="#0F0F0F"> SIMPLE REPORT </font></b>
   <br><br><br>
-  
+
+  <b>Nodal coordinates</b> <br>
+  {nodal_coords}
+  <br><br><br>
+
+  <b>Elements</b> <br>
+  {elements}
+  <br><br><br>
+
   <b>Nodal displacements</b> <br>
   {nodal_displacements}
   <br><br><br>

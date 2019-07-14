@@ -1,5 +1,5 @@
 # wxtruss
 
-Simple application for solve 2D Trusses.
+A simple Python application for 2D-Truss analysis.
 
 ![](/img/screen.PNG)
