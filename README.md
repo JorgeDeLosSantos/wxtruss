@@ -16,6 +16,28 @@ Then, in console run:
 wxtruss
 ```
 
+## Features 
+
+### Input data
+
+* Nodal coordinates
+* Element information
+    - Connectivity (Ni, Nj)
+    - Young Modulus (E)
+    - Cross-sectional area (A)
+* Constraints
+* Forces
+
+### Output data
+
+* A report that contains,
+    - Nodes and elements information
+    - Nodal displacements
+    - Nodal forces
+    - Element forces
+    - Element stresses
+* Plot of deformed and undeformed shape of truss
+
 ## Versions
 
 Current version: 0.1.0

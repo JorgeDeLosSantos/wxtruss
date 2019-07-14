@@ -4,7 +4,7 @@
 # License: MIT License
 # Author: Pedro Jorge De Los Santos
 # E-mail: delossantosmfq@gmail.com
-from __future__ import division
+# ~ from __future__ import division
 import wx
 import wx.grid as grid
 import wx.html as html
