@@ -23,9 +23,9 @@ Current version: 0.1.0
 
 ## Screenshots
 
-![](/img/screen_02.PNG)
+![](/wxtruss/img/screen_02.PNG)
 
-![](/img/screen.PNG)
+![](wxtruss/img/screen.PNG)
 
 
 ## About...
