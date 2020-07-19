@@ -5,5 +5,5 @@
 # Author: Pedro Jorge De Los Santos
 # E-mail: delossantosmfq@gmail.com
 
-__version__ = "0.1.2"
+__version__ = "0.1.2.dev1"
 __author__ = "Pedro Jorge De Los Santos"

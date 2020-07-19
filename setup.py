@@ -3,12 +3,14 @@ import site
 import os.path
 import glob
 from setuptools import setup, find_packages
+from wxtruss import __version__
+
 
 MODULE_NAME = "wxtruss"
 
 setup(
     name= MODULE_NAME,
-    version='0.1.0',
+    version = __version__,
     description='A simple Python application for 2D-Truss analysis.',
     author='Pedro Jorge De Los Santos',
     author_email='delossantosmfq@gmail.com',
@@ -40,3 +42,4 @@ setup(
     ],
     package_data={"wxtruss": ["img/*","data/*"]}
 )
+
