@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# wxtruss 0.1.2
+# wxtruss 
 # License: MIT License
 # Author: Pedro Jorge De Los Santos
 # E-mail: delossantosmfq@gmail.com
@@ -22,6 +22,14 @@ import webbrowser
 import pandas as pd
 import json
 import os
+
+
+# For  versioning
+dir_setup = os.path.dirname(os.path.realpath(__file__))
+
+with open(os.path.join(dir_setup, '', 'version.py')) as f:
+    # Defines __version__
+    exec(f.read())
 
 
 class wxTruss(wx.Frame):
@@ -77,7 +85,7 @@ class wxTruss(wx.Frame):
         
     def _set_mpl(self):
         matplotlib.rc('figure', facecolor="#ffffff")
-        matplotlib.rc('axes', facecolor="#ffffff", linewidth=0.1, grid=True)
+        matplotlib.rc('axes', facecolor="#ffffff", linewidth=0.1, grid=False)
         # ~ matplotlib.rc('font', family="Times New Roman")
     
     def init_menu(self):
@@ -97,6 +105,7 @@ class wxTruss(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_from_json, from_json)
         self.Bind(wx.EVT_MENU, self.on_about, about)
         self.Bind(wx.EVT_MENU, self.on_help, _help)
+        self.Bind(wx.EVT_MENU, self.on_quit, quit_app)
         
     def init_model_data(self):
         try:
@@ -117,6 +126,9 @@ class wxTruss(wx.Frame):
         
     def on_help(self,event):
         print("Help unavailable")
+    
+    def on_quit(self,event):
+        self.Close()
         
         
     def on_from_json(self,event):
@@ -421,7 +433,7 @@ ABOUT_HTML = """
 </head>
 <body bgcolor="#0A3865" link="#E5E5E5" vlink="#F0F0F0" alink="#F0F0F0">
   <center>
-  <h1><font color="#FFFF00"> wxTruss 0.1.2 </font></h1>
+  <h1><font color="#FFFF00"> wxTruss {version} </font></h1>
 
 
   <font color="#ADD8E6">
@@ -434,7 +446,7 @@ ABOUT_HTML = """
   </center>
 </body>
 </html>
-"""
+""".format(version=__version__)
 
 class HTMLWindow(html.HtmlWindow):
     def __init__(self,parent,**kwargs):

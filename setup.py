@@ -5,18 +5,22 @@ import glob
 from setuptools import setup, find_packages
 from wxtruss import __version__
 
+# For  versioning
+dir_setup = os.path.dirname(os.path.realpath(__file__))
 
-MODULE_NAME = "wxtruss"
+with open(os.path.join(dir_setup, '', 'version.py')) as f:
+    # Defines __version__
+    exec(f.read())
 
 setup(
-    name= MODULE_NAME,
+    name= "wxtruss",
     version = __version__,
     description='A simple Python application for 2D-Truss analysis.',
     author='Pedro Jorge De Los Santos',
     author_email='delossantosmfq@gmail.com',
     license = "MIT",
     keywords=["Truss","FEA"],
-    install_requires=["matplotlib","numpy","wxpython","pandas"], # Also required wxPython
+    install_requires=["matplotlib","numpy","wxpython","pandas","nusa"], 
     url='https://github.com/JorgeDeLosSantos/wxtruss',
     packages=["wxtruss",],#find_packages(),
     entry_points = {
