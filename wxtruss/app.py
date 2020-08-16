@@ -852,27 +852,27 @@ class Toolbar(wx.ToolBar):
         plot_deformed_shape = ic.plot_deformed_shape.GetBitmap()
         
         # Add
-        self.nodes_tool = self.AddLabelTool(-1, "Add nodes...", 
-        nodes, shortHelp=u"Add nodal coordinates")
+        self.nodes_tool = self.AddTool(-1, "Add nodes...", 
+        nodes, shortHelp="Add nodal coordinates")
         
-        self.elements_tool = self.AddLabelTool(-1, "Add elements...", 
-        elements, shortHelp=u"Add element connectivity")
+        self.elements_tool = self.AddTool(-1, "Add elements...", 
+        elements, shortHelp="Add element connectivity")
         
         #~ self.AddSeparator()
         
-        self.constraints_tool = self.AddLabelTool(-1, "Add constraint", 
-        constraints, shortHelp=u"Add constraints...")
+        self.constraints_tool = self.AddTool(-1, "Add constraint", 
+        constraints, shortHelp="Add constraints...")
         
-        self.forces_tool = self.AddLabelTool(-1, "Add force", 
-        forces, shortHelp=u"Add forces...")
+        self.forces_tool = self.AddTool(-1, "Add force", 
+        forces, shortHelp="Add forces...")
         
-        self.plot_model_tool = self.AddLabelTool(-1, "Plot model", 
+        self.plot_model_tool = self.AddTool(-1, "Plot model", 
         plot_model, shortHelp="Plot model...")
         
-        self.solve_tool = self.AddLabelTool(-1, "Solve model", 
+        self.solve_tool = self.AddTool(-1, "Solve model", 
         solve, shortHelp="Solve model...")
         
-        self.plot_deformed_shape_tool = self.AddLabelTool(-1, "Plot deformed shape", 
+        self.plot_deformed_shape_tool = self.AddTool(-1, "Plot deformed shape", 
         plot_deformed_shape, shortHelp="Plot deformed shape")
 
 
