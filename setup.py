@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import site
-import os.path
+import os
 import glob
 from setuptools import setup, find_packages
 
 # For  versioning
 dir_setup = os.path.dirname(os.path.realpath(__file__))
 
-with open(os.path.join(dir_setup, '', 'version.py')) as f:
+with open(os.path.join(dir_setup, 'wxtruss', 'version.py')) as f:
     # Defines __version__
     exec(f.read())
 
@@ -45,4 +45,3 @@ setup(
     ],
     package_data={"wxtruss": ["img/*","data/*"]}
 )
-
