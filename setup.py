@@ -3,7 +3,6 @@ import site
 import os.path
 import glob
 from setuptools import setup, find_packages
-from wxtruss import __version__
 
 # For  versioning
 dir_setup = os.path.dirname(os.path.realpath(__file__))
