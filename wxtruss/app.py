@@ -34,8 +34,8 @@ with open(os.path.join(dir_setup, '', 'version.py')) as f:
 
 class wxTruss(wx.Frame):
     def __init__(self,parent):
-        wx.Frame.__init__(self,parent,title="wxTruss",size=(900,600))
-        
+        title = "wxTruss {version}".format(version=__version__)
+        wx.Frame.__init__(self,parent,title=title,size=(900,600))
         self.init_menu()
         self.init_ctrls()
         self.init_model_data()
@@ -90,8 +90,11 @@ class wxTruss(wx.Frame):
     
     def init_menu(self):
         m_file = wx.Menu()
+
+        new_model = m_file.Append(-1, "New model \tCtrl+N")
         from_json = m_file.Append(-1, "Read model from Truss/JSON file... \tCtrl+J")
         quit_app = m_file.Append(-1, "Quit \tCtrl+Q")
+
         
         m_help = wx.Menu()
         _help = m_help.Append(-1, "Help")
@@ -102,6 +105,7 @@ class wxTruss(wx.Frame):
         menu_bar.Append(m_help, "Help")
         self.SetMenuBar(menu_bar)
         
+        self.Bind(wx.EVT_MENU, self.on_new_model, new_model)
         self.Bind(wx.EVT_MENU, self.on_from_json, from_json)
         self.Bind(wx.EVT_MENU, self.on_about, about)
         self.Bind(wx.EVT_MENU, self.on_help, _help)
@@ -109,13 +113,17 @@ class wxTruss(wx.Frame):
         
     def init_model_data(self):
         try:
-            self.read_model_from_json("data/example_03.truss")
+            self.read_model_from_json("data/exampsle_01.truss")
         except:
-            self.nodes = np.array([[0,0],[2,0],[0,2]])
-            self.elements = np.array([[1,2,200e9,1e-4],[2,3,200e9,1e-4],[1,3,200e9,1e-4]])
-            self.forces = np.array([[3,1000,0]])
-            self.constraints = np.array([[1, 0, 0], [2, 0, 0]])
-        
+            # self.nodes = np.array([[0,0],[2,0],[0,2]])
+            # self.elements = np.array([[1,2,200e9,1e-4],[2,3,200e9,1e-4],[1,3,200e9,1e-4]])
+            # self.forces = np.array([[3,1000,0]])
+            # self.constraints = np.array([[1, 0, 0], [2, 0, 0]])
+            self.nodes = []
+            self.elements = []
+            self.forces = []
+            self.constraints = []
+
     def isempty(self,arg):
         if not arg:
             return True
@@ -129,7 +137,15 @@ class wxTruss(wx.Frame):
     
     def on_quit(self,event):
         self.Close()
-        
+
+    def on_new_model(self,event):
+        self.nodes = []
+        self.elements = []
+        self.forces = []
+        self.constraints = []
+        self.axes.cla()
+        self.txtout.SetPage("")
+        self.canvas.draw()
         
     def on_from_json(self,event):
         path = ""
@@ -267,12 +283,14 @@ class wxTruss(wx.Frame):
         
         
         x0,x1,y0,y1 = self.rect_region()
-        xf,yf = abs(x1-x0)/20, abs(y1-y0)/20
-        # ~ bbox = dict(boxstyle=f"circle", fc="#fafafa")
-        # ~ for nd in self.model.get_nodes():
-            # ~ cstr = str(nd.label+1)
-            # ~ ax.text(nd.x - xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
-            # ~ zorder=10000, bbox=bbox)
+        xnf,ynf = 30, 25
+        xf,yf = abs(x1-x0)/xnf, abs(y1-y0)/ynf
+        bbox = dict(boxstyle=f"circle", fc="#fafafa")
+        for nd in self.model.get_nodes():
+            cstr = str(nd.label+1)
+            ax.text(nd.x + xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
+            zorder=10000, bbox=bbox)
+
         ax.axis('equal')
         ax.set_xlim(x0,x1)
         ax.set_ylim(y0,y1)
@@ -624,7 +642,7 @@ class NodesTable(DataGrid):
         self.SetColLabelValue(1, "Y")
         
         if isinstance(data,list):
-            nodes_info = np.array([[0,0],[2,0],[0,2]])
+            nodes_info = np.zeros((1,2)) #np.array([[0,0],[2,0],[0,2]])
         else:
             nodes_info = data
         self.SetArrayData(nodes_info)
@@ -642,8 +660,9 @@ class ElementsTable(DataGrid):
         self.SetColSize(1, 50)
         
         if isinstance(data,list):
-            E,A = 200e9, 0.01
-            elm_info = np.array([[1,2,E,A],[2,3,E,A],[3,1,E,A]])
+            # E,A = 200e9, 0.01
+            # elm_info = np.array([[1,2,E,A],[2,3,E,A],[3,1,E,A]])
+            elm_info = np.zeros((1,4))
         else:
             elm_info = data
         self.SetArrayData(elm_info)
@@ -671,7 +690,8 @@ class ConstraintsTable(DataGrid):
         self.SetColLabelValue(2, "UY")
         
         if isinstance(data,list):
-            cinfo = np.array([[1,0,0],[2,np.nan,0]])
+            # cinfo = np.array([[1,0,0],[2,np.nan,0]])
+            cinfo =  np.zeros((1,3))
         else:
             cinfo = data
         self.SetArrayData(cinfo)
@@ -703,7 +723,8 @@ class ForcesTable(DataGrid):
         self.SetColLabelValue(2, "FY")
         
         if isinstance(data,list):
-            finfo = np.array([[3,1000,0]])
+            # finfo = np.array([[3,1000,0]])
+            finfo =  np.zeros((1,3))
         else:
             finfo = data
         self.SetArrayData(finfo)
@@ -887,7 +908,7 @@ REPORT_TEMPLATE = """
 
 <center>
 
-  <b><font color="#0F0F0F"> SIMPLE REPORT </font></b>
+  <b><font color="#0F0F0F"> wxTruss Report </font></b>
   <br><br><br>
 
   <b>Nodal coordinates</b> <br>
