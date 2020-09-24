@@ -5,4 +5,4 @@
 # Author: Pedro Jorge De Los Santos
 # E-mail: delossantosmfq@gmail.com
 
-__version__ = "0.2.dev0"
+__version__ = "0.2.0"

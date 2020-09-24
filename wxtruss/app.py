@@ -286,10 +286,10 @@ class wxTruss(wx.Frame):
         xnf,ynf = 30, 25
         xf,yf = abs(x1-x0)/xnf, abs(y1-y0)/ynf
         bbox = dict(boxstyle=f"circle", fc="#fafafa")
-        for nd in self.model.get_nodes():
-            cstr = str(nd.label+1)
-            ax.text(nd.x + xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
-            zorder=10000, bbox=bbox)
+        # ~ for nd in self.model.get_nodes():
+            # ~ cstr = str(nd.label+1)
+            # ~ ax.text(nd.x + xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
+            # ~ zorder=10000, bbox=bbox)
 
         ax.axis('equal')
         ax.set_xlim(x0,x1)
