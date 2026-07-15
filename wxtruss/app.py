@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
 import matplotlib.lines as mlines
-import wxtruss.iconos as ic
+import iconos as ic
 from nusa import * # FEA library
 import webbrowser
 import pandas as pd
@@ -35,7 +35,7 @@ with open(os.path.join(dir_setup, '', 'version.py')) as f:
 class wxTruss(wx.Frame):
     def __init__(self,parent):
         title = "wxTruss {version}".format(version=__version__)
-        wx.Frame.__init__(self,parent,title=title,size=(900,600))
+        wx.Frame.__init__(self,parent,title=title,size=(900,700))
         self.init_menu()
         self.init_ctrls()
         self.init_model_data()
@@ -203,16 +203,16 @@ class wxTruss(wx.Frame):
     def html_report(self):        
         m = self.model
         
-        NODES = [n.label+1 for n in m.get_nodes()]
-        ELEMENTS = [e.label+1 for e in m.get_elements()]
+        NODES = [n.label+1 for n in m.nodes]
+        ELEMENTS = [e.label+1 for e in m.elements]
         
-        el = [e.get_nodes() for e in m.get_elements()]
+        el = [e.nodes for e in m.elements]
         ELEMENTS_CONN = [(ni.label+1,nj.label+1) for ni,nj in el]
-        NODAL_COORDS = [[n.x,n.y] for n in m.get_nodes()]
-        NODAL_DISPLACEMENTS = [[n.ux,n.uy] for n in m.get_nodes()]
-        NODAL_FORCES = [[n.fx,n.fy] for n in m.get_nodes()]
-        ELEMENT_FORCES = [e.f for e in m.get_elements()]
-        ELEMENT_STRESSES = [e.s for e in m.get_elements()]
+        NODAL_COORDS = [[n.x,n.y] for n in m.nodes]
+        NODAL_DISPLACEMENTS = [[n.ux,n.uy] for n in m.nodes]
+        NODAL_FORCES = [[n.fx,n.fy] for n in m.nodes]
+        ELEMENT_FORCES = [e.f for e in m.elements]
+        ELEMENT_STRESSES = [e.s for e in m.elements]
         
         EL_INFO = pd.DataFrame(ELEMENTS_CONN, columns=["Ni","Nj"], index=ELEMENTS).to_html()
         ND_COORDS = pd.DataFrame(NODAL_COORDS, columns=["X","Y"], index=NODES).to_html()
@@ -270,8 +270,8 @@ class wxTruss(wx.Frame):
         ax = self.axes
         ax.cla()
         
-        for elm in self.model.get_elements():
-            ni, nj = elm.get_nodes()
+        for elm in self.model.elements:
+            ni, nj = elm.nodes
             ax.plot([ni.x,nj.x],[ni.y,nj.y],"b-o", markersize=3)
             for nd in (ni,nj):
                 if nd.fx > 0: self._draw_xforce(ax,nd.x,nd.y,1)
@@ -286,7 +286,7 @@ class wxTruss(wx.Frame):
         xnf,ynf = 30, 25
         xf,yf = abs(x1-x0)/xnf, abs(y1-y0)/ynf
         bbox = dict(boxstyle=f"circle", fc="#fafafa")
-        # ~ for nd in self.model.get_nodes():
+        # ~ for nd in self.model.nodes:
             # ~ cstr = str(nd.label+1)
             # ~ ax.text(nd.x + xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
             # ~ zorder=10000, bbox=bbox)
@@ -331,7 +331,7 @@ class wxTruss(wx.Frame):
         
     def rect_region(self,factor=7.0):
         nx,ny = [],[]
-        for n in self.model.get_nodes():
+        for n in self.model.nodes:
             nx.append(n.x)
             ny.append(n.y)
         xmn,xmx,ymn,ymx = min(nx),max(nx),min(ny),max(ny)
@@ -345,8 +345,8 @@ class wxTruss(wx.Frame):
         
         df = dfactor*self._calculate_deformed_factor()
         
-        for elm in self.model.get_elements():
-            ni,nj = elm.get_nodes()
+        for elm in self.model.elements:
+            ni,nj = elm.nodes
             x, y = [ni.x,nj.x], [ni.y,nj.y]
             xx = [ni.x+ni.ux*df, nj.x+nj.ux*df]
             yy = [ni.y+ni.uy*df, nj.y+nj.uy*df]
@@ -374,8 +374,8 @@ class wxTruss(wx.Frame):
         
     def _calculate_deformed_factor(self):
         x0,x1,y0,y1 = self.rect_region()
-        ux = np.abs(np.array([n.ux for n in self.model.get_nodes()]))
-        uy = np.abs(np.array([n.uy for n in self.model.get_nodes()]))
+        ux = np.abs(np.array([n.ux for n in self.model.nodes]))
+        uy = np.abs(np.array([n.uy for n in self.model.nodes]))
         sf = 1.5e-2
         if ux.max()==0 and uy.max()!=0:
             kfx = sf*(y1-y0)/uy.max()
@@ -859,7 +859,7 @@ class ForcesDialog(wx.Dialog):
 class Toolbar(wx.ToolBar):
     def __init__(self,parent,**kwargs):
         wx.ToolBar.__init__(self,parent=parent,style=wx.TB_VERTICAL,**kwargs)
-        tbsize = (28,28)
+        tbsize = (24,24)
         self.SetToolBitmapSize(tbsize)
         self.SetBackgroundColour("#ffffff")
         
