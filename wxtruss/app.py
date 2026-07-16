@@ -525,11 +525,15 @@ class HTMLWindow(html.HtmlWindow):
         html.HtmlWindow.__init__(self,parent=parent,**kwargs)
     
     def OnLinkClicked(self, link):
+        """ Open the link in the default web browser. """
         webbrowser.open(link.GetHref())
 
 
 
 class DataGrid(grid.Grid):
+    """
+    A custom grid class for displaying and editing data in a tabular format.
+    """
     def __init__(self,parent,gridsize,**kwargs):
         grid.Grid.__init__(self,parent=parent,id=-1,**kwargs)
         rows = int(gridsize[0])
@@ -541,6 +545,9 @@ class DataGrid(grid.Grid):
         self.Bind(grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnRightClick)
         
     def UpdateGridSize(self,rows,cols):
+        """
+        Update the grid size to the specified number of rows and columns.
+        """
         self.ClearGrid()
         ccols = self.GetNumberCols()
         crows = self.GetNumberRows()
@@ -557,7 +564,7 @@ class DataGrid(grid.Grid):
             
     def SetArrayData(self,data):
         """
-        Data must be a numpy array
+        Set the grid data from a 2D numpy array.
         """
         r,c = data.shape # For numpy array
         self.UpdateGridSize(r,c)
@@ -568,6 +575,7 @@ class DataGrid(grid.Grid):
                 self.SetCellValue(i,j,val)
         
     def GetArrayData(self):
+        """ Get the grid data as a 2D numpy array. """
         nrows = self.GetNumberRows()
         ncols = self.GetNumberCols()
         X = np.zeros((nrows,ncols))
@@ -578,8 +586,7 @@ class DataGrid(grid.Grid):
                     try:
                         X[i][j] = float(cval)
                     except:
-                        # Revisar valores devueltos
-                        X[i][j] = np.nan
+                        X[i][j] = np.nan 
                 else:
                     X[i][j] = np.nan
         X = X[~np.isnan(X).any(axis=1)] # Complete rows
@@ -620,6 +627,7 @@ class DataGrid(grid.Grid):
         
     def OnCellEdit(self,event):
         """
+        Handle cell edit events. If the cell value starts with '=', evaluate it as a Python expression.
         """
         row,col = (event.GetRow(),event.GetCol())
         cval = self.GetCellValue(row,col)

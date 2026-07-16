@@ -50,7 +50,7 @@ Current version: 0.1.0
 
 ![](/wxtruss/img/screen_03.PNG)
 
-![](/wxtruss/img/screen_04.PNG)
+![](/wxtruss/img/screen_04.png)
 
 
 ## About...
