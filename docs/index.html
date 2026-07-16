@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wxTruss - Official Documentation & User Guide</title>
+    <style>
+        :root {
+            --primary-color: #0A3865;
+            --secondary-color: #0076ad;
+            --accent-color: #F41313;
+            --light-bg: #f8f9fa;
+            --border-color: #e9ecef;
+            --text-color: #333333;
+            --code-bg: #272822;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--secondary-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.6rem;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            margin: 10px 0 0 0;
+            font-size: 1.15rem;
+            color: #b0cbe8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            background-color: var(--light-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        aside h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        aside ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        aside li {
+            margin-bottom: 12px;
+        }
+
+        aside a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        aside a:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Main Content */
+        main section {
+            margin-bottom: 60px;
+            scroll-margin-top: 20px;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 25px;
+            font-size: 1.3rem;
+        }
+
+        p {
+            text-align: justify;
+        }
+
+        .step-card {
+            background-color: var(--light-bg);
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .step-card h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        .note {
+            background-color: #fff9db;
+            border-left: 4px solid #fcc419;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #f1f3f5;
+            text-align: center;
+            padding: 25px;
+            margin-top: 60px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            aside {
+                position: relative;
+                top: 0;
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>wxTruss Documentation</h1>
+        <p>A desktop GUI application for structural 2D Truss analysis via the Finite Element Method (FEM)</p>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <h3>Contents</h3>
+            <ul>
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#user-manual">2. End-User Manual</a></li>
+                <li><a href="#interactive-features">3. Interactive Grid Features</a></li>
+                <li><a href="#architecture">4. Developer Reference</a></li>
+                <li><a href="#file-format">5. File Format (.truss / .json)</a></li>
+                <li><a href="#credits">6. Author & License</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <!-- 1. Introduction -->
+            <section id="introduction">
+                <h2>1. Introduction</h2>
+                <p>
+                    <strong>wxTruss</strong> is an interactive, lightweight desktop application designed for modeling, analyzing, and visualizing 2D structures under axial loads (trusses). 
+                    Built on top of <span class="badge">wxPython</span> for the user interface, <span class="badge">Matplotlib</span> for graphical rendering, and powered by the <span class="badge">NuSA</span> (Numerical Structural Analysis) finite element library, it bridges the gap between complex engineering software and simple educational tools.
+                </p>
+                <p>
+                    Whether you are an engineering student learning structural analysis or a professional performing quick design validations, wxTruss provides an immediate visual response to structural loads, reactions, deformations, and internal member stresses.
+                </p>
+            </section>
+
+            <!-- 2. End-User Manual -->
+            <section id="user-manual">
+                <h2>2. End-User Manual</h2>
+                <p>This section guides end-users step-by-step through setting up, analyzing, and inspecting a 2D truss model.</p>
+                
+                <h3>Step-by-Step Modeling Guide</h3>
+                
+                <div class="step-card">
+                    <h4>Step 1: Set Up the Geometry (Nodes)</h4>
+                    <p>Click on the <strong>Nodes</strong> icon in the left vertical toolbar. A table will pop up. Enter the X and Y coordinates (e.g., in meters) for every joint in your structure. Once finished, click <strong>OK</strong>.</p>
+                </div>
+
+                <div class="step-card">
+                    <h4>Step 2: Create Struts & Ties (Elements)</h4>
+                    <p>Click on the <strong>Elements</strong> icon in the toolbar. Under <strong>Ni</strong> (Initial Node) and <strong>Nj</strong> (Final Node), enter the integer labels of the nodes you want to connect. Specify the material properties: <strong>E</strong> (Young's Modulus, e.g., <code>200e9</code> for steel in Pascals) and <strong>A</strong> (Cross-sectional Area in square meters).</p>
+                </div>
+
+                <div class="step-card">
+                    <h4>Step 3: Define Supports (Constraints)</h4>
+                    <p>Click on the <strong>Constraints</strong> icon. Select the node you wish to anchor. To prevent movement in X, enter <code>0</code> under <strong>UX</strong>. To prevent movement in Y, enter <code>0</code> under <strong>UY</strong>. Leaving a cell blank or entering a non-numeric value leaves that direction free.</p>
+                </div>
+
+                <div class="step-card">
+                    <h4>Step 4: Apply Structural Loads (Forces)</h4>
+                    <p>Click on the <strong>Forces</strong> icon. Assign forces (in Newtons or corresponding units) to specific nodes by writing down the node index and specifying <strong>FX</strong> (horizontal force) or <strong>FY</strong> (vertical force). Negative values represent downward or leftward directions.</p>
+                </div>
+
+                <div class="step-card">
+                    <h4>Step 5: Visualize the Model & Solve</h4>
+                    <p>Click the <strong>Plot Model</strong> icon to see your nodes, elements, loads (indicated as red arrows), and supports (triangles and rollers) updated in the window. Once verified, click the <strong>Solve</strong> button. A full, interactive HTML report will immediately load in the right-hand panel of the window.</p>
+                </div>
+
+                <div class="step-card">
+                    <h4>Step 6: View the Deformed Shape</h4>
+                    <p>After solving, click on the <strong>Deformed Shape</strong> icon. The program will overlay a red dashed line over your original blue structure, visually magnifying the displacement of the nodes under the given loads.</p>
+                </div>
+
+                <h3>Understanding Graphical Symbols</h3>
+                <ul>
+                    <li><strong style="color: green;">Green Triangle with hatched ground:</strong> A fully fixed support (pinned support restricting both X and Y movement).</li>
+                    <li><strong style="color: green;">Green Triangle with two wheels underneath:</strong> A roller support restricting vertical movement (<span class="badge">UY</span>) while allowing horizontal drift.</li>
+                    <li><strong style="color: darkorange;">Orange Triangle with wheels on the side:</strong> A roller support restricting horizontal movement (<span class="badge">UX</span>) while allowing vertical drift.</li>
+                    <li><strong style="color: red;">Red Arrows:</strong> Active concentrated loads. The size of the arrow self-adjusts based on the global dimensions of your layout.</li>
+                </ul>
+            </section>
+
+            <!-- 3. Interactive Grid Features -->
+            <section id="interactive-features">
+                <h2>3. Interactive Grid Features</h2>
+                <p>The dialog grids in wxTruss act similarly to standard spreadsheet software and include several hidden features to speed up your modeling:</p>
+                
+                <div class="note">
+                    <strong>Pro-Tip: Spreadsheet Formulas</strong><br>
+                    You can input mathematical expressions directly into any cell. Simply start your cell entry with an equals sign (<code>=</code>). For instance, typing <code>=200*10**9</code> and pressing Enter will automatically compute and write <code>200000000000.0</code>.
+                </div>
+
+                <h3>Right-Click Context Menu</h3>
+                <p>Right-clicking anywhere inside the grids opens an options menu:</p>
+                <ul>
+                    <li><strong>Add rows...:</strong> Appends a new blank row to the bottom of the active sheet.</li>
+                    <li><strong>Delete rows:</strong> Deletes the currently selected row(s).</li>
+                    <li><strong>Fill columns randomly:</strong> Fills selected coordinates or properties with arbitrary values (useful for quick structural testing and noise generation).</li>
+                </ul>
+            </section>
+
+            <!-- 4. Developer Reference -->
+            <section id="architecture">
+                <h2>4. Developer Reference</h2>
+                <p>For developers wanting to modify, extend, or understand the codebase, here is the architecture of the primary modules.</p>
+                
+                <h3>Core UI Frame: <code>wxTruss</code></h3>
+                <p>This is the main container of the application. It inherits from <code>wx.Frame</code>. It handles events from the menu bar, coordinates the <code>Matplotlib</code> figure canvas, and passes numerical data to the <code>NuSA</code> FEA library.</p>
+                
+                <h3>Key GUI Subclasses</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Inherits From</th>
+                            <th>Responsibility</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>DataGrid</code></td>
+                            <td><code>wx.grid.Grid</code></td>
+                            <td>Handles raw cell input, selection blocks, and context menus. Implements custom expression parsing via <code>OnCellEdit()</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>HTMLWindow</code></td>
+                            <td><code>wx.html.HtmlWindow</code></td>
+                            <td>Displays the rendered HTML output from Pandas. Uses Python's native <code>webbrowser</code> to redirect hyperlink clicks to the OS default browser.</td>
+                        </tr>
+                        <tr>
+                            <td><code>AboutDialog</code></td>
+                            <td><code>wx.Frame</code></td>
+                            <td>A modal pop-up displaying credits, license info, and repository links formatted via HTML.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Computational Pipeline</h3>
+                <p>When you click <strong>Solve</strong>, the application runs <code>solve_model()</code>, executing the following pipeline:</p>
+                <ol>
+                    <li><code>build_model()</code> parses rows from <code>self.nodes</code> and <code>self.elements</code>.</li>
+                    <li>An instance of <code>TrussModel</code> (from <code>nusa</code>) is initialized.</li>
+                    <li>Nodal coordinate variables, structural element profiles, forces, and constraints are registered.</li>
+                    <li><code>self.model.solve()</code> is executed, solving the system stiffness matrix equations: <span class="badge">[K]{U} = {F}</span>.</li>
+                    <li>Results are gathered into <code>pandas.DataFrame</code> tables and formatted using <code>.to_html()</code>.</li>
+                    <li>The finalized text is loaded into <code>self.txtout</code> (HTML Panel).</li>
+                </ol>
+            </section>
+
+            <!-- 5. File Format -->
+            <section id="file-format">
+                <h2>5. File Format (.truss / .json)</h2>
+                <p>You can load files inside the <code>File</code> menu. Internally, wxTruss uses human-readable JSON formats. Files can end in <code>.json</code> or <code>.truss</code>.</p>
+<pre>
+{
+  "nodes": [
+    {"x": 0.0, "y": 0.0},
+    {"x": 2.0, "y": 0.0},
+    {"x": 1.0, "y": 1.5}
+  ],
+  "elements": [
+    {"ni": 1, "nj": 2, "E": 200e9, "A": 0.01},
+    {"ni": 2, "nj": 3, "E": 200e9, "A": 0.01},
+    {"ni": 3, "nj": 1, "E": 200e9, "A": 0.01}
+  ],
+  "constraints": [
+    {"node": 1, "ux": 0.0, "uy": 0.0},
+    {"node": 2, "ux": "free", "uy": 0.0}
+  ],
+  "forces": [
+    {"node": 3, "fx": 10000.0, "fy": -5000.0}
+  ]
+}
+</pre>
+            </section>
+
+            <!-- 6. Credits -->
+            <section id="credits">
+                <h2>6. Author & License</h2>
+                <p>
+                    wxTruss is distributed as an open-source tool under the permissive <strong>MIT License</strong>, giving developers and engineers absolute freedom to repurpose, deploy, and adjust the source code.
+                </p>
+                <div style="background-color: var(--light-bg); padding: 20px; border-left: 4px solid var(--primary-color); border-radius: 4px;">
+                    <strong>Developer:</strong> Pedro Jorge De Los Santos<br>
+                    <strong>E-mail:</strong> <a href="mailto:delossantosmfq@gmail.com">delossantosmfq@gmail.com</a><br>
+                    <strong>Open Source Code:</strong> <a href="https://github.com/JorgeDeLosSantos/wxtruss" target="_blank">wxtruss GitHub Repository</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 wxTruss Project. Documented for open engineering education.</p>
+    </footer>
+
+</body>
+</html>

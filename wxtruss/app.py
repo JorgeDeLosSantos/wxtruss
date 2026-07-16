@@ -430,7 +430,7 @@ class wxTruss(wx.Frame):
         x0,x1,y0,y1 = self.rect_region()
         ux = np.abs(np.array([n.ux for n in self.model.nodes]))
         uy = np.abs(np.array([n.uy for n in self.model.nodes]))
-        sf = 1.5e-2
+        sf = 2.0e-2
         if ux.max()==0 and uy.max()!=0:
             kfx = sf*(y1-y0)/uy.max()
             kfy = sf*(y1-y0)/uy.max()
