@@ -4,7 +4,7 @@
 # License: MIT License
 # Author: Pedro Jorge De Los Santos
 # E-mail: delossantosmfq@gmail.com
-# ~ from __future__ import division
+
 import wx
 import wx.grid as grid
 import wx.html as html
@@ -113,8 +113,9 @@ class wxTruss(wx.Frame):
         
     def init_model_data(self):
         try:
-            self.read_model_from_json("data/exampsle_01.truss")
-        except:
+            model_path = os.path.join(os.getcwd(), "wxtruss", "data", "example_03.truss")
+            self.read_model_from_json(model_path)
+        except Exception as e:
             # self.nodes = np.array([[0,0],[2,0],[0,2]])
             # self.elements = np.array([[1,2,200e9,1e-4],[2,3,200e9,1e-4],[1,3,200e9,1e-4]])
             # self.forces = np.array([[3,1000,0]])
@@ -159,6 +160,7 @@ class wxTruss(wx.Frame):
             wx.MessageBox('Not file selected', 'wxTruss', wx.OK | wx.ICON_INFORMATION)
         else:
             self.read_model_from_json(path)
+        print("Model read from file: ", path)
         
     def build_model(self):        
         nc = self.nodes
@@ -233,7 +235,6 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.nodes = data
         dlg.Destroy()
-        print(data)
         
     def add_elements(self,event):
         data = self.elements
@@ -242,7 +243,6 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.elements = data
         dlg.Destroy()
-        print(data)
         
     def add_constraints(self,event):
         data = self.constraints
@@ -251,7 +251,6 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.constraints = data
         dlg.Destroy()
-        print(data)
         
     def add_forces(self,event):
         data = self.forces
@@ -260,11 +259,10 @@ class wxTruss(wx.Frame):
             data = dlg.GetData()
             self.forces = data
         dlg.Destroy()
-        print(data)
 
     def plot_model(self,event):
         """
-        Plot the mesh model, including bcs
+        Plot the mesh model, including boundary conditions and applied forces.
         """
         self.build_model()
         ax = self.axes
@@ -283,13 +281,15 @@ class wxTruss(wx.Frame):
         
         
         x0,x1,y0,y1 = self.rect_region()
-        xnf,ynf = 30, 25
+        xnf,ynf = 40, 40
         xf,yf = abs(x1-x0)/xnf, abs(y1-y0)/ynf
-        bbox = dict(boxstyle=f"circle", fc="#fafafa")
-        # ~ for nd in self.model.nodes:
-            # ~ cstr = str(nd.label+1)
-            # ~ ax.text(nd.x + xf, nd.y + yf, cstr, fontsize=7, color="#F41313",
-            # ~ zorder=10000, bbox=bbox)
+        bbox = dict(fc="#fafafa", boxstyle="circle", ec="#afafaf")
+
+        # Draw node labels
+        for nd in self.model.nodes:
+            cstr = str(nd.label+1)
+            ax.text(nd.x+xf, nd.y+yf, cstr, fontsize=6, color="#F41313",
+            zorder=10000, bbox=bbox)
 
         ax.axis('equal')
         ax.set_xlim(x0,x1)
@@ -304,7 +304,7 @@ class wxTruss(wx.Frame):
         HW = dx/5.0
         HL = dx/3.0
         arrow_props = dict(head_width=HW, head_length=HL, fc='r', ec='r')
-        axes.arrow(x, y, ddir*dx, dy, **arrow_props)
+        axes.arrow(x, y, ddir*dx, dy, zorder=1100, **arrow_props)
         
     def _draw_yforce(self,axes,x,y,ddir=1):
         """
@@ -904,7 +904,7 @@ REPORT_TEMPLATE = """
   <meta charset="utf-8">
   <title></title>
 </head>
-<body bgcolor="#FFFFFF" link="#E5E5E5" vlink="#F0F0F0" alink="#F0F0F0">
+<body bgcolor="#FAFAFA" link="#E5E5E5" vlink="#F0F0F0" alink="#F0F0F0">
 
 <center>
 
