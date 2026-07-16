@@ -161,6 +161,7 @@ class wxTruss(wx.Frame):
         else:
             self.read_model_from_json(path)
         print("Model read from file: ", path)
+        self.txtout.SetPage("") # Clear report
         
     def build_model(self):        
         nc = self.nodes
@@ -321,12 +322,6 @@ class wxTruss(wx.Frame):
         HL = dy/3.0
         arrow_props = dict(head_width=HW, head_length=HL, fc='r', ec='r')
         axes.arrow(x, y, dx, ddir*dy, zorder=1000, **arrow_props)
-        
-    # def _draw_xconstraint(self,axes,x,y):
-    #     axes.plot(x, y, "b<", markersize=10, alpha=0.6)
-    
-    # def _draw_yconstraint(self,axes,x,y):
-    #     axes.plot(x, y, "gv", markersize=10, alpha=0.6)
 
     def _draw_fixed_constraint(self, axes, x, y):
         """
@@ -461,13 +456,13 @@ class wxTruss(wx.Frame):
         self.nodes = nodes
         
         nn = len(obj["elements"])
-        elementos = np.zeros((nn,4))
+        elements = np.zeros((nn,4))
         for i,m in enumerate(obj["elements"]):
-            elementos[i,0] = m["ni"]
-            elementos[i,1] = m["nj"]
-            elementos[i,2] = m["E"]
-            elementos[i,3] = m["A"]
-        self.elements = elementos
+            elements[i,0] = m["ni"]
+            elements[i,1] = m["nj"]
+            elements[i,2] = m["E"]
+            elements[i,3] = m["A"]
+        self.elements = elements
         
         nn = len(obj["constraints"])
         const = np.zeros((nn,3))
@@ -478,12 +473,12 @@ class wxTruss(wx.Frame):
         self.constraints = const
         
         nn = len(obj["forces"])
-        fuerzas = np.zeros((nn,3))
+        forces = np.zeros((nn,3))
         for i,m in enumerate(obj["forces"]):
-            fuerzas[i,1] = m["fx"]
-            fuerzas[i,2] = m["fy"]
-            fuerzas[i,0] = m["node"]
-        self.forces = fuerzas
+            forces[i,1] = m["fx"]
+            forces[i,2] = m["fy"]
+            forces[i,0] = m["node"]
+        self.forces = forces
         self.plot_model([])
             
 
