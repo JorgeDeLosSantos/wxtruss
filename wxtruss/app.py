@@ -134,7 +134,7 @@ class wxTruss(wx.Frame):
         AboutDialog(None)
         
     def on_help(self,event):
-        print("Help unavailable")
+        webbrowser.open("https://jorgedelossantos.github.io/wxtruss/")
     
     def on_quit(self,event):
         self.Close()
