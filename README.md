@@ -1,16 +1,19 @@
 # wxTruss
 
-A simple Python application for 2D-Truss analysis.
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A simple and intuitive Python application for **2D-Truss analysis** using a graphical user interface.
 
 ## Installation
 
-Using pip:
+You can install `wxTruss` directly from the GitHub repository using `pip`:
 
 ```
 pip install git+https://github.com/JorgeDeLosSantos/wxtruss.git
 ```
 
-Then, in console run:
+Once installed, simply run the following command in your terminal or command prompt:
 
 ```
 wxtruss
@@ -21,28 +24,26 @@ wxtruss
 ### Input data
 
 * Nodal coordinates
-* Element information
+* Element properties:
     - Connectivity (Ni, Nj)
     - Young Modulus (E)
     - Cross-sectional area (A)
-* Constraints
-* Forces
+* Boundary conditions (Constraints/supports)
+* Applied loads (Nodal forces)
 
 ### Output data
 
-* A report that contains,
-    - Nodes and elements information
-    - Nodal displacements
+* Detailed text report including:
+    - Node and element summary.
+    - Nodal displacements.
     - Nodal forces
     - Element forces
     - Element stresses
-* Plot of deformed and undeformed shape of truss
-
-## Versions
-
-Current version: 0.1.0
+* Plot of both the deformed and undeformed shape of the truss.
 
 ## Screenshots
+
+Here is a preview of the application in action:
 
 ![](/wxtruss/img/screen_01.PNG)
 
