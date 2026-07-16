@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
 import matplotlib.lines as mlines
-import iconos as ic
+import icons as ic
 from nusa import * # FEA library
 import webbrowser
 import pandas as pd
@@ -276,8 +276,14 @@ class wxTruss(wx.Frame):
                 if nd.fx < 0: self._draw_xforce(ax,nd.x,nd.y,-1)
                 if nd.fy > 0: self._draw_yforce(ax,nd.x,nd.y,1)
                 if nd.fy < 0: self._draw_yforce(ax,nd.x,nd.y,-1)
-                if nd.ux == 0: self._draw_xconstraint(ax,nd.x,nd.y)
-                if nd.uy == 0: self._draw_yconstraint(ax,nd.x,nd.y)
+                if nd.ux == 0 and nd.uy == 0:
+                    self._draw_fixed_constraint(ax, nd.x, nd.y)
+                elif nd.ux == 0:
+                    self._draw_xconstraint(ax, nd.x, nd.y)
+                elif nd.uy == 0:
+                    self._draw_yconstraint(ax, nd.x, nd.y)
+                # if nd.ux == 0: self._draw_xconstraint(ax,nd.x,nd.y)
+                # if nd.uy == 0: self._draw_yconstraint(ax,nd.x,nd.y)
         
         
         x0,x1,y0,y1 = self.rect_region()
@@ -316,11 +322,64 @@ class wxTruss(wx.Frame):
         arrow_props = dict(head_width=HW, head_length=HL, fc='r', ec='r')
         axes.arrow(x, y, dx, ddir*dy, zorder=1000, **arrow_props)
         
-    def _draw_xconstraint(self,axes,x,y):
-        axes.plot(x, y, "b<", markersize=10, alpha=0.6)
+    # def _draw_xconstraint(self,axes,x,y):
+    #     axes.plot(x, y, "b<", markersize=10, alpha=0.6)
     
-    def _draw_yconstraint(self,axes,x,y):
-        axes.plot(x, y, "gv", markersize=10, alpha=0.6)
+    # def _draw_yconstraint(self,axes,x,y):
+    #     axes.plot(x, y, "gv", markersize=10, alpha=0.6)
+
+    def _draw_fixed_constraint(self, axes, x, y):
+        """
+        Draw a fixed support (both X and Y constrained) at the given coordinates.
+        """
+        size = self._calculate_arrow_size() * 0.6
+        # Triangle for the support
+        tx = [x, x - size/2, x + size/2, x]
+        ty = [y, y - size, y - size, y]
+        axes.plot(tx, ty, color="green", linewidth=1.5, zorder=1050)
+        
+        # Ground line
+        axes.plot([x - size, x + size], [y - size, y - size], color="green", linewidth=2, zorder=1050)
+        
+        # Draw small lines to represent the fixed support
+        for dx in np.linspace(-size, size, 5):
+            axes.plot([x + dx, x + dx - size*0.2], [y - size, y - size - size*0.2], color="green", linewidth=1, zorder=1050)
+
+    def _draw_yconstraint(self, axes, x, y):
+        """
+        Draw a roller that constrains vertical movement (Y)
+        """
+        size = self._calculate_arrow_size() * 0.6
+        # Triangle
+        tx = [x, x - size/2, x + size/2, x]
+        ty = [y, y - size, y - size, y]
+        axes.plot(tx, ty, color="green", linewidth=1.5, zorder=1050)
+        
+        # Ground line (slightly separated by the rollers)
+        gap = size * 0.15
+        axes.plot([x - size, x + size], [y - size - gap, y - size - gap], color="green", linewidth=1.5, zorder=1050)
+        
+        # Two small circles (rollers) under the triangle
+        axes.plot(x - size*0.25, y - size, "o", color="green", markersize=3, zorder=1051)
+        axes.plot(x + size*0.25, y - size, "o", color="green", markersize=3, zorder=1051)
+
+    def _draw_xconstraint(self, axes, x, y):
+        """
+        Draw a roller that constrains horizontal movement (X)
+        """
+        size = self._calculate_arrow_size() * 0.6
+        # Triangle pointing horizontally to the node
+        tx = [x, x - size, x - size, x]
+        ty = [y, y - size/2, y + size/2, y]
+        axes.plot(tx, ty, color="darkorange", linewidth=1.5, zorder=1050)
+        
+        # Vertical ground line
+        gap = size * 0.15
+        axes.plot([x - size - gap, x - size - gap], [y - size, y + size], color="darkorange", linewidth=1.5, zorder=1050)
+        
+        # Two small circles (rollers)
+        axes.plot(x - size, y - size*0.25, "o", color="darkorange", markersize=3, zorder=1051)
+        axes.plot(x - size, y + size*0.25, "o", color="darkorange", markersize=3, zorder=1051)
         
     def _calculate_arrow_size(self):
         x0,x1,y0,y1 = self.rect_region(factor=50)

@@ -1,0 +1,16 @@
+# -*- coding: utf-8 -*-
+#
+# wxtruss 0.1.1
+# License: MIT License
+# Author: Pedro Jorge De Los Santos
+# E-mail: delossantosmfq@gmail.com
+
+import glob
+from wx.tools.img2py import img2py
+
+if __name__=='__main__':
+    # print(glob.glob("img/*.png"))
+    for img in glob.glob("img/*.png"):
+        print(f"Working on {img}")
+        img2py(img,"iconos.py", append=True)
+    print("Done")
